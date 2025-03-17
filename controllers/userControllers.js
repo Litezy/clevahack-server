@@ -18,14 +18,14 @@ exports.signUp = async (req, res) => {
         if (regFields.some((field) => !field)) return res.json({ status: 400, msg: "All fields are required" })
         const findMail = await User.findOne({ where: { email } })
         if (findMail) return res.json({ status: 400, msg: "Email already exists, kindly login" })
-        const findPhone = await User.findOne({ where: { phone } })
+        const findPhone = await User.findOne({ where: { phone_number } })
+        if (findPhone) return res.json({ status: 400, msg: "Phone number already exists" })
         const validatePassword = (password) => {
             const regex = /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[!@#$%^&*])[A-Za-z\d!@#$%^&*]{6,}$/;
             return regex.test(password);
         }
         if (!validatePassword(password)) return res.json({ status: 400, msg: "Password must be at least 6 characters long, contain at least one uppercase letter, one number, and one special character." })
         if (password !== confirm_password) return res.json({ status: 400, msg: "Password(s) mismatch" })
-        if (findPhone) return res.json({ status: 400, msg: "Phone number already exists" })
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(password, salt);
         const code = otpgenerator.generate(6, { specialChars: false, lowerCaseAlphabets: false, specialChars: false })
