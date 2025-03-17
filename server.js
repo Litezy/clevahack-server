@@ -17,7 +17,7 @@ const io = new Server(server);
 
 // CORS configuration
 app.use(cors({
-    origin: ['http://localhost:5173', 'http://localhost:5174','http://localhost:5004','https://clevahack-server.onrender.com'],
+    origin: ['http://localhost:5173', 'http://localhost:5174','http://localhost:5004','https://clevahack-server.onrender.com','https://sync-learnin.vercel.app'],
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     allowedHeaders: 'Origin, X-Requested-With, Content-Type, Accept, Authorization',
     credentials: true
