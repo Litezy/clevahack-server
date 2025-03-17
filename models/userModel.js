@@ -14,5 +14,5 @@ module.exports = (sequelize, DataTypes) => {
         role: { type: DataTypes.STRING, alowNull: false, defaultValue: 'student' },
         test_passed: { type: DataTypes.STRING, defaultValue: 'false' },
          verified: { type: DataTypes.STRING, alowNull: false, defaultValue: 'unverified' },
-    })
+    }) 
 }
