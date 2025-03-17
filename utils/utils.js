@@ -7,14 +7,11 @@ exports.ServerError = (res, error) => {
 }
 exports.WebName = 'Innovators'
 
-
-
 exports.GlobalImageUploads = async (images, uploadPath, path_id) => {
     const isProduction = process.env.NODE_ENV === 'production'
     if (!images || images.length === 0) {
         throw new Error('No images uploaded')
     }
-
     let imgUrls = []
 
     if (isProduction) {

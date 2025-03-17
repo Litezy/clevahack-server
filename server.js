@@ -17,7 +17,7 @@ const io = new Server(server);
 
 // CORS configuration
 app.use(cors({
-    origin: ['http://localhost:5173', 'http://localhost:5174'],
+    origin: ['http://localhost:5173', 'http://localhost:5174','http://localhost:5004'],
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     allowedHeaders: 'Origin, X-Requested-With, Content-Type, Accept, Authorization',
     credentials: true
@@ -55,7 +55,7 @@ const swaggerOptions = {
         },
         servers: [
             { url: `http://localhost:${port}` },
-            { url: 'https://cleva.pinerockcreditunion.com' } // Replace with prod URL
+            { url: 'https://educonnect.pinerockcreditunion.com' } // Replace with prod URL
         ],
         components: {
             securitySchemes: {
@@ -81,6 +81,7 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs, {
 
 // Routes
 app.use('/api/v1', require('./routes/userRoutes'));
+app.use('/api/v1/chat', require('./routes/chatRoutes'));
 
 // Socket.IO connection
 io.on('connection', (socket) => {

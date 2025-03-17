@@ -7,13 +7,14 @@ const otpgenerator = require('otp-generator')
 const Notify = require('../models').notifications
 const SendMail = require('../emails/mailConfig')
 const moment = require('moment')
+const { sequelize } = require('../models')
 
 
 
 exports.signUp = async (req, res) => {
     try {
-        const { firstname, lastname, phone, role, email, gender, password, confirm_password } = req.body
-        const regFields = [firstname, lastname, phone, email, gender, role, password, confirm_password]
+        const { fullname, phone_number, role, level, dob, location, email, gender, password, confirm_password } = req.body
+        const regFields = [fullname, phone_number, email, gender, level, dob, location, role, password, confirm_password]
         if (regFields.some((field) => !field)) return res.json({ status: 400, msg: "All fields are required" })
         const findMail = await User.findOne({ where: { email } })
         if (findMail) return res.json({ status: 400, msg: "Email already exists, kindly login" })
@@ -27,15 +28,16 @@ exports.signUp = async (req, res) => {
         if (findPhone) return res.json({ status: 400, msg: "Phone number already exists" })
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(password, salt);
-        const code = otpgenerator.generate(6, { specialChars: false, lowerCaseAlphabets: false })
-        const unique_id = otpgenerator.generate(6, { specialChars: false, lowerCaseAlphabets: false })
-        const newUser = await User.create({ firstname, unique_id, lastname, role, gender, email, password: hashedPassword, code })
+        const code = otpgenerator.generate(6, { specialChars: false, lowerCaseAlphabets: false, specialChars: false })
+        const firstname = fullname.split(' ')[0]
+        const unique_id = otpgenerator.generate(6, { specialChars: false, lowerCaseAlphabets: false, upperCaseAlphabets: false })
+        const newUser = await User.create({ fullname, phone_number, role, level, dob, location, email, gender, password: hashedPassword, unique_id, code })
         await SendMail({
             code: code,
             mailTo: email,
             subject: 'Account Verification Code',
             username: firstname,
-            fullname: `${firstname} ${lastname}`,
+            fullname: `${fullname} `,
             message: 'Copy and paste your account verification code below',
             template: 'verification',
             email: email,
@@ -99,21 +101,18 @@ exports.VerifyEmail = async (req, res) => {
 
 exports.resendOtp = async (req, res) => {
     try {
-        const { email, tag } = req.body
-        if (!tag) return res.json({ status: 400, msg: "Tag missing" })
-        const tags = ['password', 'email']
-        if (!tags.includes(tag)) return res.json({ status: 400, msg: "Imvalid Tag Found" })
+        const { email } = req.body
         if (!email) return res.json({ status: 400, msg: 'User email is missing' })
         const FindEmail = await User.findOne({ where: { email } })
         if (FindEmail.verified === 'verified') return res.json({ status: 400, msg: 'Account already verified' })
         if (!FindEmail) return res.json({ status: 404, msg: 'Account not found' })
-        const otp = otpgenerator.generate(6, { specialChars: false, lowerCaseAlphabets: false })
+        const otp = otpgenerator.generate(6, { specialChars: false, lowerCaseAlphabets: false, upperCaseAlphabets: false })
         FindEmail.code = otp
         await FindEmail.save()
         await SendMail({
             code: otp,
             mailTo: email,
-            subject: tag === 'email' ? 'Account Verification Code' : 'OTP For Change Of Password',
+            subject: 'Account Verification Code',
             username: FindEmail.firstname,
             fullname: `${FindEmail.firstname} ${FindEmail.lastname}`,
             message: 'Copy and paste your account verification code below',
@@ -252,7 +251,7 @@ exports.getUserProfile = async (req, res) => {
 
 exports.UpdateProfile = async (req, res) => {
     try {
-        const { firstname, lastname, phone } = req.body
+        const { fullname, phone_number, level, dob, location } = req.body
         const findUser = await User.findOne({ where: { id: req.user } })
         if (!findUser) return res.json({ status: 404, msg: "User not found" })
         const avatar = req?.files?.avatar
@@ -265,9 +264,11 @@ exports.UpdateProfile = async (req, res) => {
             const image = await GlobalImageUploads([avatar], 'avatars', findUser.unique_id)
             findUser.avatar = image[0]
         }
-        if (firstname) findUser.firstname = firstname
-        if (lastname) findUser.lastname = lastname
-        if (phone) findUser.phone = phone
+        if (fullname) findUser.fullname = fullname
+        if (level) findUser.level = level
+        if (phone_number) findUser.phone_number = phone_number
+        if (dob) findUser.dob = dob
+        if (location) findUser.location = location
         await findUser.save()
         await Notify.create({
             userid: findUser.id,
@@ -278,5 +279,16 @@ exports.UpdateProfile = async (req, res) => {
 
     } catch (error) {
         ServerError(res, error)
+    }
+}
+
+//test db connection
+exports.testdb = async (req, res) => {
+    try {
+        const result = await sequelize.query('SELECT 1 as test');
+        res.json({ success: true, data: result[0] });
+    } catch (error) {
+        console.error('Database connection error:', error);
+        res.status(500).json({ success: false, error: error.message });
     }
 }
