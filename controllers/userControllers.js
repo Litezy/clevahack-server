@@ -28,7 +28,7 @@ exports.signUp = async (req, res) => {
         if (password !== confirm_password) return res.json({ status: 400, msg: "Password(s) mismatch" })
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(password, salt);
-        const code = otpgenerator.generate(6, { specialChars: false, lowerCaseAlphabets: false, specialChars: false })
+        const code = otpgenerator.generate(6, { specialChars: false, lowerCaseAlphabets: false, specialChars: false,upperCaseAlphabets:false })
         const firstname = fullname.split(' ')[0]
         const unique_id = otpgenerator.generate(6, { specialChars: false, lowerCaseAlphabets: false, upperCaseAlphabets: false })
         const newUser = await User.create({ fullname, phone_number, role, level, dob, location, email, gender, password: hashedPassword, unique_id, code })
