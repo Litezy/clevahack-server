@@ -55,7 +55,7 @@ const swaggerOptions = {
         },
         servers: [
             { url: `http://localhost:${port}` },
-            { url: 'https://educonnect.pinerockcreditunion.com' } // Replace with prod URL
+            { url: 'https://clevahack-server.onrender.com' } // Replace with prod URL
         ],
         components: {
             securitySchemes: {
